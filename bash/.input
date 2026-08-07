@@ -1,0 +1,22 @@
+# ==========================================
+# .input - Shell Input & CLI Configuration
+# ==========================================
+
+# --- Key Bindings & Readline Options ---
+# Enable case-insensitive auto-completion
+set completion-ignore-case on
+
+# Show all completion matches on a single tab press
+set show-all-if-ambiguous on
+
+# --- Environment Variables / Inputs ---
+export INPUT_MODE="interactive"
+export DEFAULT_TIMEOUT=30
+export LOG_LEVEL="info"
+
+# --- Custom Prompt Inputs & Shortcuts ---
+alias input-reload="source ~/.input"
+# codex --model gpt-5.5 \
+  -c model_provider=exe-lmlm \
+  -c 'model_providers.exe-lmlm.name="exe-lmlm"' \
+  -c 'model_providers.exe-lmlm.base_url="https://lmlm.int.exe.xyz/v1"'
