@@ -1,0 +1,87 @@
+# ==========================================
+# ~/.input — Shell Input & CLI Configuration
+# ==========================================
+
+# Fail safely when sourced
+# NOTE: Don't use `set -e` here; this file is meant to be sourced.
+
+# ------------------------------------------
+# Readline
+# ------------------------------------------
+
+if [ -n "${BASH_VERSION:-}" ]; then
+    bind 'set completion-ignore-case on' 2>/dev/null || true
+    bind 'set show-all-if-ambiguous on' 2>/dev/null || true
+fi
+
+# ------------------------------------------
+# Environment
+# ------------------------------------------
+
+export INPUT_MODE="${INPUT_MODE:-interactive}"
+export DEFAULT_TIMEOUT="${DEFAULT_TIMEOUT:-30}"
+export LOG_LEVEL="${LOG_LEVEL:-info}"
+
+# ------------------------------------------
+# Helpers
+# ------------------------------------------
+
+input_reload() {
+    local file="${INPUT_CONFIG:-$HOME/.input}"
+
+    if [ -f "$file" ]; then
+        # shellcheck disable=SC1090
+        source "$file"
+        printf '✓ Reloaded %s\n' "$file"
+    else
+        printf '✗ Input config not found: %s\n' "$file" >&2
+        return 1
+    fi
+}
+
+input_status() {
+    printf '%s\n' \
+        "INPUT_MODE=$INPUT_MODE" \
+        "DEFAULT_TIMEOUT=$DEFAULT_TIMEOUT" \
+        "LOG_LEVEL=$LOG_LEVEL"
+}
+
+alias input-reload='input_reload'
+alias input-status='input_status'
+
+# ------------------------------------------
+# Codex — exe-lmlm Provider
+# ------------------------------------------
+
+codex_lmlm() {
+    command codex \
+        --model gpt-5.5 \
+        -c 'model_provider=exe-lmlm' \
+        -c 'model_providers.exe-lmlm.name=exe-lmlm' \
+        -c 'model_providers.exe-lmlm.base_url=https://lmlm.int.exe.xyz/v1' \
+        "$@"
+}
+
+alias codex-lmlm='codex_lmlm'
+
+# ------------------------------------------
+# Optional: default Codex launcher
+# ------------------------------------------
+
+codex-default() {
+    if command -v codex >/dev/null 2>&1; then
+        codex "$@"
+    else
+        printf '✗ codex command not found\n' >&2
+        return 127
+    fi
+}
+
+# ------------------------------------------
+# Load confirmation
+# ------------------------------------------
+
+if [ "${INPUT_SILENT:-0}" != "1" ]; then
+    printf '✓ .input loaded | mode=%s | log=%s\n' \
+        "$INPUT_MODE" "$LOG_LEVEL"
+fi
