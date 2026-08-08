@@ -1,0 +1,53 @@
+{{- /*
+Vale GitHub Actions annotation template.
+
+Converts Vale alerts into GitHub workflow commands:
+
+  ::error
+  ::warning
+  ::notice
+
+Expected GitHub annotation fields:
+  file
+  line
+  col
+  title
+  message
+
+Readability diagnostics and the first column of the first line
+are intentionally ignored.
+*/ -}}
+
+{{- range .Files -}}
+  {{- $file := .Path -}}
+
+  {{- range .Alerts -}}
+    {{- $line := .Line -}}
+    {{- $check := .Check -}}
+    {{- $severity := .Severity -}}
+    {{- $message := .Message -}}
+
+    {{- $col := 1 -}}
+    {{- if .Span -}}
+      {{- $col = index .Span 0 -}}
+    {{- end -}}
+
+    {{- if and
+      (ne $line 1)
+      (ne $col 1)
+      (not (hasPrefix $check "Readability"))
+    -}}
+
+      {{- $title := $check | quote -}}
+
+      {{- if eq $severity "error" -}}
+::error file={{ $file }},line={{ $line }},col={{ $col }},title={{ $title }}::{{ $message }}
+      {{- else if eq $severity "warning" -}}
+::warning file={{ $file }},line={{ $line }},col={{ $col }},title={{ $title }}::{{ $message }}
+      {{- else -}}
+::notice file={{ $file }},line={{ $line }},col={{ $col }},title={{ $title }}::{{ $message }}
+      {{- end -}}
+
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
